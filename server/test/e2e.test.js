@@ -76,6 +76,7 @@ before(async () => {
   await new Promise((r) => server.once('listening', r));
   api = `http://127.0.0.1:${server.address().port}`;
   pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
+  if (process.env.DB_SCHEMA) pool.on('connect', (c) => c.query(`SET search_path TO ${process.env.DB_SCHEMA}`));
 });
 
 after(async () => { server?.close(); piMock?.close(); await pool?.end(); const { pool: p } = await import('../src/db.js'); await p.end(); });
@@ -446,4 +447,12 @@ test('reçu de paiement: uniquement si payé, code de contrôle vérifiable par 
   // après remboursement, le reçu n'est plus valable
   assert.equal((await call('GET', `/api/orders/${piOrder.id}/receipt`, { token: piTok })).status, 409);
   assert.equal((await call('POST', '/api/seller/receipts/verify', { token: sellerTok, body: { order_no: rc.body.receipt.order_no, code: rc.body.receipt.code } })).status, 404);
+});
+
+test('schéma dédié (DB_SCHEMA): les tables restent hors de « public »', { skip: !process.env.DB_SCHEMA }, async () => {
+  const s = process.env.DB_SCHEMA;
+  const inSchema = (await pool.query(`SELECT count(*)::int n FROM pg_tables WHERE schemaname = $1`, [s])).rows[0].n;
+  const inPublic = (await pool.query(`SELECT count(*)::int n FROM pg_tables WHERE schemaname = 'public'`)).rows[0].n;
+  assert.ok(inSchema > 20);
+  assert.equal(inPublic, 0);
 });

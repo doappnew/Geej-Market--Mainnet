@@ -280,7 +280,7 @@ BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
     EXECUTE (
       SELECT string_agg(format('ALTER TABLE %I ENABLE ROW LEVEL SECURITY', tablename), '; ')
-      FROM pg_tables WHERE schemaname = 'public'
+      FROM pg_tables WHERE schemaname = current_schema()
     );
   END IF;
 END $$;
