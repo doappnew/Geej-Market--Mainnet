@@ -1,0 +1,14 @@
+{
+  "name": "geej-market",
+  "version": "1.0.0",
+  "private": true,
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "install:all": "npm --prefix server ci && npm --prefix client ci --include=dev",
+    "build": "npm --prefix client run build",
+    "start": "node server/src/index.js",
+    "db:migrate": "npm --prefix server run db:migrate",
+    "db:seed": "npm --prefix server run db:seed",
+    "test": "npm --prefix server test"
+  }
+}

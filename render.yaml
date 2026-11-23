@@ -1,0 +1,21 @@
+# Blueprint Render (hébergement). La base PostgreSQL est fournie par Supabase (DATABASE_URL), pas par Render.
+services:
+  - type: web
+    name: geej-market-mainnet
+    runtime: node
+    plan: free
+    buildCommand: npm run install:all && npm run build && npm run db:migrate && npm run db:seed
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - { key: NODE_VERSION, value: "22" }
+      - { key: NODE_ENV, value: production }
+      - { key: DATABASE_SSL, value: "true" }
+      - { key: DATABASE_URL, sync: false }
+      - { key: JWT_SECRET, generateValue: true }
+      - { key: SUPABASE_URL, sync: false }
+      - { key: SUPABASE_SERVICE_KEY, sync: false }
+      - { key: SUPABASE_BUCKET, value: product-images }
+      - { key: PI_API_KEY, sync: false }
+      - { key: PI_VALIDATION_KEY, sync: false }
