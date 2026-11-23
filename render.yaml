@@ -12,8 +12,6 @@ services:
       - { key: NODE_VERSION, value: "22" }
       - { key: NODE_ENV, value: production }
       - { key: DATABASE_SSL, value: "true" }
-      # Base partagée avec le Testnet: ce service travaille uniquement dans son schéma « mainnet » (connexion Supabase en mode session, port 5432).
-      - { key: DB_SCHEMA, value: mainnet }
       - { key: DATABASE_URL, sync: false }
       - { key: JWT_SECRET, generateValue: true }
       - { key: SUPABASE_URL, sync: false }
