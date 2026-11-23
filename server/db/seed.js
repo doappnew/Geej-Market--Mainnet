@@ -49,7 +49,8 @@ async function main() {
   // Administrateur initial
   const adminEmail = (process.env.ADMIN_EMAIL || 'admin@geejmarket.sn').toLowerCase();
   const exists = await pool.query('SELECT id FROM users WHERE email=$1', [adminEmail]);
-  if (!exists.rowCount) {
+  // Production (connexion Pi seule): aucun compte à mot de passe. L'admin est désigné par ADMIN_PI_USERNAMES. Le compte e-mail n'est créé que pour les tests.
+  if (!exists.rowCount && process.env.ADMIN_PASSWORD) {
     const pwd = process.env.ADMIN_PASSWORD || crypto.randomBytes(9).toString('base64url');
     const u = await pool.query(
       `INSERT INTO users(full_name,email,password_hash,role) VALUES ('Administrateur GÉEJ',$1,$2,'admin') RETURNING id`,

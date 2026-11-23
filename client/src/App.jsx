@@ -8,7 +8,7 @@ import Product from './pages/Product.jsx';
 import Cart from './pages/Cart.jsx';
 import Checkout from './pages/Checkout.jsx';
 import { OrdersList, OrderDetail } from './pages/Orders.jsx';
-import { PiGate, StaffLogin, AccountHome, AccountRoutes } from './pages/Account.jsx';
+import { PiGate, AccountHome, AccountRoutes } from './pages/Account.jsx';
 import { useAuth } from './state.jsx';
 import Info from './pages/Info.jsx';
 import { Spinner } from './components/ui.jsx';
@@ -44,11 +44,11 @@ function Splash() {
   );
 }
 
-// Avant toute chose, le pionnier se connecte avec son compte Pi. Restent ouverts: infos légales et accès équipe.
+// Avant toute chose, tout le monde (pionniers et équipe) se connecte avec son compte Pi. Seules les infos légales restent ouvertes.
 function Gate({ children }) {
   const { user, ready } = useAuth();
   const { pathname } = useLocation();
-  const open = pathname.startsWith('/infos/') || pathname === '/equipe' || pathname.startsWith('/vendeur') || pathname.startsWith('/admin');
+  const open = pathname.startsWith('/infos/');
   if (!ready) return <Spinner />;
   if (!user && !open) return <PiGate />;
   return children;
@@ -72,7 +72,6 @@ export default function App() {
           <Route path="/commandes/:id/recu" element={<Receipt />} />
           <Route path="/connexion" element={<Navigate to="/" replace />} />
           <Route path="/inscription" element={<Navigate to="/" replace />} />
-          <Route path="/equipe" element={<StaffLogin />} />
           <Route path="/compte" element={<AccountHome />} />
           <Route path="/compte/*" element={<AccountRoutes />} />
           <Route path="/infos/:page" element={<Info />} />

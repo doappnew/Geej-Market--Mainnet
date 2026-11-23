@@ -9,9 +9,22 @@ import { piMe } from '../pi.js';
 
 const r = Router();
 
-// Les pionniers se connectent UNIQUEMENT avec leur compte Pi. Le mot de passe ne sert qu'à l'équipe (vendeur / admin).
-// ALLOW_PASSWORD_CLIENTS=1 réserve l'inscription/connexion par mot de passe aux tests automatisés.
+// Règle Pi Network: la connexion se fait UNIQUEMENT avec le compte Pi (aucune connexion par e-mail ou mot de passe), équipe comprise.
+// ALLOW_PASSWORD_CLIENTS=1 n'existe que pour les tests automatisés ; en production cette variable n'est jamais définie.
 const passwordClients = () => process.env.ALLOW_PASSWORD_CLIENTS === '1';
+
+// Équipe: les rôles admin / vendeur sont attribués d'après le nom d'utilisateur Pi (variables ADMIN_PI_USERNAMES et SELLER_PI_USERNAMES, séparées par des virgules).
+const piList = (name) => (process.env[name] || '').split(',').map((x) => x.trim().toLowerCase().replace(/^@/, '')).filter(Boolean);
+async function syncStaffRole(id, username) {
+  const u = (username || '').toLowerCase();
+  const { rows } = await query('SELECT role FROM users WHERE id = $1', [id]);
+  const cur = rows[0].role;
+  const want = u && piList('ADMIN_PI_USERNAMES').includes(u) ? 'admin' : u && piList('SELLER_PI_USERNAMES').includes(u) ? 'seller' : 'client';
+  if (want === cur) return;
+  await query('UPDATE users SET role = $1, token_version = token_version + 1 WHERE id = $2', [want, id]);
+  if (want === 'admin') await query(`INSERT INTO admins(user_id, level) VALUES ($1, 'super_admin') ON CONFLICT (user_id) DO NOTHING`, [id]);
+  if (want === 'seller') await query(`INSERT INTO sellers(user_id, shop_name, city) VALUES ($1, 'GÉEJ MARKET', 'Dakar') ON CONFLICT (user_id) DO NOTHING`, [id]);
+}
 
 const phoneField = z.string().trim().min(1).transform((v, ctx) => {
   const p = normalizePhone(v);
@@ -49,6 +62,7 @@ r.post('/register', asyncH(async (req, res) => {
 }));
 
 r.post('/login', asyncH(async (req, res) => {
+  if (!passwordClients()) throw new HttpError(403, 'Connexion par mot de passe indisponible : utilisez votre compte Pi.', 'pi_only');
   const { identifier, password } = z.object({ identifier: z.string().trim().min(3).max(120), password: z.string().min(1).max(100) }).parse(req.body);
   const isEmail = identifier.includes('@');
   const key = isEmail ? identifier.toLowerCase() : normalizePhone(identifier);
@@ -59,7 +73,7 @@ r.post('/login', asyncH(async (req, res) => {
   const ok = u?.password_hash ? await bcrypt.compare(password, u.password_hash) : await bcrypt.compare(password, '$2a$12$invalidinvalidinvalidinvalidinvalidinvalidinvalidinvalidi');
   if (!u || !ok) { await audit({ ip: req.ip }, 'auth.login_failed', 'user', u?.id ?? null); throw bad(); }
   if (!u.is_active) throw new HttpError(403, 'Compte suspendu. Contactez le service client.', 'suspended');
-  if (u.role === 'client' && !passwordClients()) throw new HttpError(403, 'Connexion par mot de passe réservée à l’équipe. Utilisez votre compte Pi.', 'pi_only');
+  if (!passwordClients()) throw new HttpError(403, 'Connexion par mot de passe indisponible : utilisez votre compte Pi.', 'pi_only');
   const full = await fullUser(u.id);
   await audit({ user: full, ip: req.ip }, 'auth.login', 'user', full.id);
   res.json({ token: signToken(full), user: publicUser(full) });
@@ -85,6 +99,7 @@ r.post('/pi', asyncH(async (req, res) => {
     id = rows[0].id;
     if (me.username) await query('UPDATE users SET pi_username = $1 WHERE id = $2', [me.username, id]);
   }
+  await syncStaffRole(id, me.username);
   const u = await fullUser(id);
   res.json({ token: signToken(u), user: publicUser(u) });
 }));
@@ -124,6 +139,7 @@ r.patch('/me', requireAuth, asyncH(async (req, res) => {
 }));
 
 r.post('/change-password', requireAuth, asyncH(async (req, res) => {
+  if (!passwordClients()) throw new HttpError(403, 'Mot de passe indisponible : connexion par compte Pi uniquement.', 'pi_only');
   const d = z.object({ current_password: z.string().max(100).optional(), new_password: passwordField }).parse(req.body);
   const { rows } = await query('SELECT password_hash FROM users WHERE id = $1', [req.user.id]);
   if (rows[0].password_hash) {

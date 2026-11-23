@@ -26,4 +26,3 @@ export const CONDITIONS = ['frais', 'congelé', 'fumé', 'séché', 'salé', 'au
 export const UNITS = ['kg', 'demi-kg', 'pièce', 'lot', 'paquet', 'carton'];
 
 export const phoneFmt = (p) => (p && p.length === 9 ? `${p.slice(0, 2)} ${p.slice(2, 5)} ${p.slice(5, 7)} ${p.slice(7)}` : p || '');
-export const waLink = (p, text = '') => `https://wa.me/${p?.startsWith('221') ? p : `221${p}`}${text ? `?text=${encodeURIComponent(text)}` : ''}`;

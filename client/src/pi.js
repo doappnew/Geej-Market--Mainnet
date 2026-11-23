@@ -28,7 +28,7 @@ export async function piLogin(linkToExisting = false) {
   } catch (e) {
     const raw = (typeof e === 'string' ? e : e?.message) || 'erreur inconnue';
     if (/cancel|closed|denied|refus/i.test(raw)) throw new Error(`Connexion Pi annulée ou refusée dans Pi Browser (${raw}).`);
-    throw new Error(`Connexion Pi bloquée par Pi Network (${raw}). Vérifiez dans le Developer Portal que l’adresse https://geej-market.onrender.com est enregistrée et vérifiée pour ce réseau.`);
+    throw new Error(`Connexion Pi bloquée par Pi Network (${raw}). Vérifiez dans le Developer Portal que l’adresse de l’application est enregistrée et vérifiée pour le réseau Mainnet.`);
   }
   if (!auth?.accessToken) throw new Error('Connexion Pi bloquée : Pi n’a renvoyé aucun jeton d’accès.');
   try {

@@ -5,7 +5,7 @@ import { Spinner } from './ui.jsx';
 export function BackOffice({ role, title, nav, children }) {
   const { user, ready, signOut } = useAuth();
   if (!ready) return <Spinner />;
-  if (!user) return <Navigate to="/equipe" state={{ from: role === 'admin' ? '/admin' : '/vendeur' }} replace />;
+  if (!user) return <Navigate to="/" state={{ from: role === 'admin' ? '/admin' : '/vendeur' }} replace />;
   if (user.role !== role) {
     return (
       <div className="bo-main" style={{ maxWidth: 520, marginTop: 60 }}>

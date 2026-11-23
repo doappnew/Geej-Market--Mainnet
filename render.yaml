@@ -19,3 +19,6 @@ services:
       - { key: SUPABASE_BUCKET, value: product-images }
       - { key: PI_API_KEY, sync: false }
       - { key: PI_VALIDATION_KEY, sync: false }
+      # Rôles équipe attribués d'après le nom d'utilisateur Pi (connexion Pi uniquement)
+      - { key: ADMIN_PI_USERNAMES, sync: false }
+      - { key: SELLER_PI_USERNAMES, sync: false }

@@ -63,7 +63,7 @@ uniquement de fixture de test ; l'application ne simule rien en fonctionnement n
 - **Stock** réservé à la création de la commande, restitué à l'annulation/refus.
 - **Livraison** : par vendeur, région (+ commune optionnelle), frais, délai, minimum, domicile/retrait. Zone non desservie ⇒ commande bloquée avec message clair. Panier multi-vendeurs ⇒ une commande par vendeur.
 - **Statuts** : en attente de paiement · nouvelle · en attente de confirmation · confirmée · en préparation · prête · en livraison · livrée · annulée — chaque changement est historisé (qui/quand/pourquoi).
-- Les pionniers se connectent **uniquement avec leur compte Pi** (bouton sur l'écran d'accueil, obligatoire avant toute action). Le mot de passe sert seulement à l'équipe (vendeur/admin) via la page cachée `/equipe`.
+- Les pionniers se connectent **uniquement avec leur compte Pi** (bouton sur l'écran d'accueil, obligatoire avant toute action). Aucune connexion par e-mail ni mot de passe, équipe comprise : l'administrateur et les vendeurs se connectent avec leur compte Pi, leur rôle étant attribué par `ADMIN_PI_USERNAMES` et `SELLER_PI_USERNAMES` (noms d'utilisateur Pi séparés par des virgules).
 
 ## Intégration Pi Network — ce qui est prêt, ce qu'il faut fournir
 
@@ -86,7 +86,7 @@ Limites assumées : pas de remboursement automatique en Pi (l'admin enregistre u
 
 1. **Supabase** : créer un projet ; récupérer la chaîne de connexion Postgres (pooler) → `DATABASE_URL` ; créer un bucket public `product-images` ; clé de service → `SUPABASE_SERVICE_KEY` (serveur uniquement), `SUPABASE_URL`.
 2. **Render** : New ▸ Blueprint sur ce dépôt (`render.yaml`) ; renseigner les variables marquées `sync: false`. `JWT_SECRET` est généré. L'application applique le schéma au démarrage (`db:migrate`, idempotent).
-3. Créer l'administrateur une fois : variables `ADMIN_EMAIL`/`ADMIN_PASSWORD` puis `npm run db:seed` dans le shell Render (sans `--demo`).
+3. Désigner l'administrateur : variable `ADMIN_PI_USERNAMES` (son nom d'utilisateur Pi). (ancienne méthode par mot de passe supprimée ; sans `--demo`).
 4. Sans Supabase Storage, les photos vont sur disque local : **perdues à chaque déploiement sur Render gratuit**. Configurer Supabase Storage en production.
 5. Le plan gratuit Render s'endort (premier chargement ≈ 50 s). Ne jamais confirmer un « Rollback » Render : il restaure d'anciennes variables d'environnement.
 6. Sauvegardes : activer les sauvegardes quotidiennes Supabase (plan adapté) ; `pg_dump` régulier recommandé.

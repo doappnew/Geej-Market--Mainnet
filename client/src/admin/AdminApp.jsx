@@ -125,32 +125,21 @@ function CatForm({ c, onClose, onSaved }) {
 }
 
 function Sellers() {
-  const toast = useToast(); const [tick, setTick] = useState(0); const [add, setAdd] = useState(false);
+  const toast = useToast(); const [tick, setTick] = useState(0);
   const { data, loading, error } = useAsync(() => api.get('/api/admin/sellers'), [tick]);
   const toggle = async (s, v) => { try { await api.patch(`/api/admin/sellers/${s.id}`, { is_active: v }); setTick(tick + 1); } catch (e) { toast(e.message, 'bad'); } };
   return (
     <>
-      <div className="row between mb"><h1 style={{ margin: 0 }}>Vendeurs</h1><button className="btn btn-primary" onClick={() => setAdd(true)}>Créer un vendeur</button></div>
+      <div className="row between mb"><h1 style={{ margin: 0 }}>Vendeurs</h1></div>
+      <div className="notice small mb">Un vendeur se connecte avec son compte Pi : son nom d’utilisateur Pi est ajouté dans la variable SELLER_PI_USERNAMES de l’hébergement.</div>
       {loading && <Spinner />}{error && <ErrorBox error={error} />}
       {data && <div className="tablewrap"><table className="t"><thead><tr><th>Boutique</th><th>Responsable</th><th>Produits</th><th>Commandes</th><th>Actif</th></tr></thead>
-        <tbody>{data.sellers.map((s) => <tr key={s.id}><td><b>{s.shop_name}</b><div className="small muted">{s.city}</div></td><td>{s.full_name}<div className="small muted">{s.email} · {phoneFmt(s.phone)}</div></td><td>{s.products}</td><td>{s.orders}</td><td><Switch checked={s.is_active} onChange={(v) => toggle(s, v)} label="Vendeur actif" /></td></tr>)}</tbody></table></div>}
-      {add && <SellerForm onClose={() => setAdd(false)} onSaved={() => { setAdd(false); setTick(tick + 1); toast('Vendeur créé', 'ok'); }} />}
+        <tbody>{data.sellers.map((s) => <tr key={s.id}><td><b>{s.shop_name}</b><div className="small muted">{s.city}</div></td><td>{s.full_name}<div className="small muted">{phoneFmt(s.phone)}</div></td><td>{s.products}</td><td>{s.orders}</td><td><Switch checked={s.is_active} onChange={(v) => toggle(s, v)} label="Vendeur actif" /></td></tr>)}</tbody></table></div>}
     </>
   );
 }
-function SellerForm({ onClose, onSaved }) {
-  const [f, setF] = useState({ full_name: '', email: '', phone: '', password: '', shop_name: '', city: '' }); const [err, setErr] = useState(null);
-  const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
-  const save = async (e) => { e.preventDefault(); setErr(null); try { await api.post('/api/admin/sellers', { ...f, city: f.city || undefined }); onSaved(); } catch (e2) { setErr(e2); } };
-  return (<Modal title="Nouveau vendeur" onClose={onClose}><form className="stack" onSubmit={save}>
-    <div className="fgrid two"><Field label="Nom de la boutique" required><input value={f.shop_name} onChange={set('shop_name')} required /></Field><Field label="Ville"><input value={f.city} onChange={set('city')} /></Field>
-      <Field label="Responsable" required><input value={f.full_name} onChange={set('full_name')} required /></Field><Field label="Téléphone" required><input inputMode="tel" value={f.phone} onChange={set('phone')} required /></Field>
-      <Field label="E-mail (identifiant)" required><input type="email" value={f.email} onChange={set('email')} required /></Field><Field label="Mot de passe provisoire" hint="8 caractères min. À communiquer au vendeur"><input type="text" value={f.password} onChange={set('password')} required minLength={8} /></Field></div>
-    {err && <ErrorBox error={err} />}<div className="row"><button type="button" className="btn btn-ghost grow" onClick={onClose}>Annuler</button><button className="btn btn-primary grow">Créer</button></div></form></Modal>);
-}
-
 function Users() {
-  const toast = useToast(); const [tick, setTick] = useState(0); const [q, setQ] = useState(''); const [role, setRole] = useState(''); const [page, setPage] = useState(1); const [pw, setPw] = useState(null);
+  const toast = useToast(); const [tick, setTick] = useState(0); const [q, setQ] = useState(''); const [role, setRole] = useState(''); const [page, setPage] = useState(1);
   const { data, loading, error } = useAsync(() => api.get(`/api/admin/users?page=${page}${role ? `&role=${role}` : ''}${q ? `&search=${encodeURIComponent(q)}` : ''}`), [tick, q, role, page]);
   const toggle = async (u, v) => { try { await api.patch(`/api/admin/users/${u.id}`, { is_active: v }); setTick(tick + 1); } catch (e) { toast(e.message, 'bad'); } };
   return (
@@ -159,20 +148,13 @@ function Users() {
       <div className="row wrap mb"><input className="input" style={{ maxWidth: 280 }} placeholder="Nom, téléphone, e-mail, pseudo Pi…" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} />
         <select className="input" style={{ maxWidth: 180 }} value={role} onChange={(e) => { setRole(e.target.value); setPage(1); }}><option value="">Tous les rôles</option><option value="client">Clients</option><option value="seller">Vendeurs</option><option value="admin">Admins</option></select></div>
       {loading && <Spinner />}{error && <ErrorBox error={error} />}
-      {data && <div className="tablewrap"><table className="t"><thead><tr><th>Nom</th><th>Contact</th><th>Rôle</th><th>Inscrit le</th><th>Actif</th><th /></tr></thead>
-        <tbody>{data.users.map((u) => <tr key={u.id}><td><b>{u.full_name}</b>{u.pi_username && <div className="small">π {u.pi_username}</div>}</td><td className="small">{phoneFmt(u.phone)}<br />{u.email}</td><td><span className="badge">{u.role}</span></td><td>{dateFr(u.created_at)}</td>
-          <td><Switch checked={u.is_active} onChange={(v) => toggle(u, v)} label="Compte actif" /></td><td><button className="btn btn-sm btn-ghost" onClick={() => setPw(u)}>Mot de passe</button></td></tr>)}</tbody></table></div>}
+      {data && <div className="tablewrap"><table className="t"><thead><tr><th>Nom</th><th>Contact</th><th>Rôle</th><th>Inscrit le</th><th>Actif</th></tr></thead>
+        <tbody>{data.users.map((u) => <tr key={u.id}><td><b>{u.full_name}</b>{u.pi_username && <div className="small">π {u.pi_username}</div>}</td><td className="small">{phoneFmt(u.phone)}</td><td><span className="badge">{u.role}</span></td><td>{dateFr(u.created_at)}</td>
+          <td><Switch checked={u.is_active} onChange={(v) => toggle(u, v)} label="Compte actif" /></td></tr>)}</tbody></table></div>}
       <Pager page={page} setPage={setPage} more={data?.users.length === 30} />
-      {pw && <PwModal u={pw} onClose={() => setPw(null)} />}
     </>
   );
 }
-function PwModal({ u, onClose }) {
-  const toast = useToast(); const [p, setP] = useState(''); const [err, setErr] = useState(null);
-  const go = async () => { try { await api.post(`/api/admin/users/${u.id}/reset-password`, { new_password: p }); toast('Mot de passe réinitialisé (sessions fermées)', 'ok'); onClose(); } catch (e) { setErr(e); } };
-  return (<Modal title={`Réinitialiser — ${u.full_name}`} onClose={onClose}><div className="stack"><Field label="Nouveau mot de passe provisoire" hint="8 caractères min."><input value={p} onChange={(e) => setP(e.target.value)} /></Field>{err && <ErrorBox error={err} />}<button className="btn btn-primary" disabled={p.length < 8} onClick={go}>Réinitialiser</button></div></Modal>);
-}
-
 function Complaints() {
   const toast = useToast(); const [tick, setTick] = useState(0); const [sel, setSel] = useState(null);
   const { data, loading, error } = useAsync(() => api.get('/api/admin/complaints'), [tick]);
@@ -200,14 +182,13 @@ function Respond({ c, onClose, onSaved }) {
 function Settings() {
   const toast = useToast(); const { data, loading } = useAsync(() => api.get('/api/admin/settings'), []);
   const [f, setF] = useState(null); const [err, setErr] = useState(null);
-  useEffect(() => { if (data) setF({ support_phone: data.settings.support_phone || '', support_whatsapp: data.settings.support_whatsapp || '' }); }, [data]);
+  useEffect(() => { if (data) setF({ support_phone: data.settings.support_phone || '' }); }, [data]);
   if (loading || !f) return <Spinner />;
   const save = async (e) => { e.preventDefault(); setErr(null); try { await api.put('/api/admin/settings', f); toast('Paramètres enregistrés', 'ok'); } catch (e2) { setErr(e2); } };
   return (
     <form className="card stack" style={{ maxWidth: 620 }} onSubmit={save}>
       <h1>Paramètres</h1>
       <Field label="Téléphone du service client"><input value={f.support_phone} onChange={(e) => setF({ ...f, support_phone: e.target.value })} /></Field>
-      <Field label="WhatsApp du service client"><input value={f.support_whatsapp} onChange={(e) => setF({ ...f, support_whatsapp: e.target.value })} /></Field>
       {err && <ErrorBox error={err} />}<button className="btn btn-primary">Enregistrer</button>
     </form>
   );

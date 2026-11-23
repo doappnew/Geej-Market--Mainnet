@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ClipboardList, Phone, MessageCircle, CheckCircle2, Truck, MapPin, Wallet, LifeBuoy, ReceiptText } from 'lucide-react';
 import { api } from '../api.js';
-import { piFmt, num, dateFr, MODES, PAY_METHOD, phoneFmt, waLink } from '../util.js';
+import { piFmt, num, dateFr, MODES, PAY_METHOD, phoneFmt } from '../util.js';
 import { ScreenShell } from '../components/Layout.jsx';
 import { Empty, StatusBadge, PayBadge, Spinner, ErrorBox, useAsync, Modal, Field } from '../components/ui.jsx';
 import { useAuth, useConfig, useToast } from '../state.jsx';
@@ -128,8 +128,7 @@ export function OrderDetail() {
             <div className="card small">
               <h3>Vendeur : {o.shop_name}</h3>
               <div className="row wrap">
-                {o.seller_phone && <a className="btn btn-sm btn-ghost" href={`tel:+221${o.seller_phone}`}><Phone size={15} /> {phoneFmt(o.seller_phone)}</a>}
-                {o.seller_whatsapp && <a className="btn btn-sm btn-ghost" href={waLink(o.seller_whatsapp, `Bonjour, à propos de ma commande ${o.order_no}`)} target="_blank" rel="noreferrer"><MessageCircle size={15} /> WhatsApp</a>}
+                {o.seller_phone && <span className="small muted"><Phone size={15} /> {phoneFmt(o.seller_phone)}</span>}
               </div>
             </div>
             <div className="stack mt">

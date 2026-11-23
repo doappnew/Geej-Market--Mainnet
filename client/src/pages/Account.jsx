@@ -45,35 +45,6 @@ export function PiGate() {
   );
 }
 
-// Accès équipe (vendeur / administrateur): adresse e-mail + mot de passe. Non affiché dans les menus des pionniers.
-export function StaffLogin() {
-  const { signIn, user } = useAuth();
-  const nav = useNavigate();
-  const [f, setF] = useState({ identifier: '', password: '' });
-  const [err, setErr] = useState(null);
-  const [busy, setBusy] = useState(false);
-  if (user) return <Navigate to={user.role === 'admin' ? '/admin' : user.role === 'seller' ? '/vendeur' : '/'} replace />;
-  const submit = async (e) => {
-    e.preventDefault(); setBusy(true); setErr(null);
-    try {
-      const res = await api.post('/api/auth/login', f);
-      await signIn(res);
-      nav(res.user.role === 'admin' ? '/admin' : res.user.role === 'seller' ? '/vendeur' : '/', { replace: true });
-    } catch (e2) { setErr(e2); } finally { setBusy(false); }
-  };
-  return (
-    <ScreenShell title="Accès équipe" back="/">
-      <form className="card stack" style={{ maxWidth: 460, margin: '0 auto' }} onSubmit={submit} noValidate>
-        <div className="small muted">Réservé au vendeur et à l’administrateur.</div>
-        <Field label="E-mail" required><input autoComplete="username" value={f.identifier} onChange={(e) => setF({ ...f, identifier: e.target.value })} required /></Field>
-        <Field label="Mot de passe" required><input type="password" autoComplete="current-password" value={f.password} onChange={(e) => setF({ ...f, password: e.target.value })} required /></Field>
-        {err && <ErrorBox error={err} />}
-        <button className="btn btn-primary btn-block" disabled={busy}>{busy ? 'Patientez…' : 'Se connecter'}</button>
-      </form>
-    </ScreenShell>
-  );
-}
-
 /* ---------- Menu compte ---------- */
 export function AccountHome() {
   const { user, ready, signOut } = useAuth();
@@ -112,17 +83,16 @@ function Guard({ children, title, back = '/compte' }) {
 
 function Infos() {
   const { user, setUser } = useAuth(); const toast = useToast();
-  const [f, setF] = useState({ full_name: user.full_name, phone: phoneFmt(user.phone), email: user.email || '' });
+  const [f, setF] = useState({ full_name: user.full_name, phone: phoneFmt(user.phone) });
   const [err, setErr] = useState(null);
   const save = async (e) => {
     e.preventDefault(); setErr(null);
-    try { const r = await api.patch('/api/auth/me', { full_name: f.full_name, phone: f.phone || undefined, email: f.email || null }); setUser(r.user); toast('Informations enregistrées', 'ok'); } catch (e2) { setErr(e2); }
+    try { const r = await api.patch('/api/auth/me', { full_name: f.full_name, phone: f.phone || undefined }); setUser(r.user); toast('Informations enregistrées', 'ok'); } catch (e2) { setErr(e2); }
   };
   return (
     <form className="card stack" onSubmit={save}>
       <Field label="Nom et prénom"><input value={f.full_name} onChange={(e) => setF({ ...f, full_name: e.target.value })} /></Field>
       <Field label="Téléphone"><input inputMode="tel" value={f.phone} onChange={(e) => setF({ ...f, phone: e.target.value })} /></Field>
-      <Field label="E-mail"><input type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} /></Field>
       {err && <ErrorBox error={err} />}<button className="btn btn-primary">Enregistrer</button>
     </form>
   );
@@ -222,7 +192,7 @@ function Complaints() {
         <Field label="Objet" required><input value={f.subject} onChange={(e) => setF({ ...f, subject: e.target.value })} maxLength={120} required /></Field>
         <Field label="Message" required><textarea value={f.message} onChange={(e) => setF({ ...f, message: e.target.value })} maxLength={2000} required /></Field>
         {err && <ErrorBox error={err} />}<button className="btn btn-primary">Envoyer</button>
-        {(cfg.support_phone || cfg.support_whatsapp) && <div className="small muted">Urgent ? {cfg.support_phone && <a href={`tel:${cfg.support_phone}`}>{cfg.support_phone}</a>}</div>}
+        {(cfg.support_phone || cfg.support_whatsapp) && <div className="small muted">Urgent ? {cfg.support_phone && <b>{cfg.support_phone}</b>}</div>}
       </form>
       {list.data?.complaints.map((c) => (
         <div className="card" key={c.id}><div className="row between"><b>{c.subject}</b><span className="badge">{ST[c.status]}</span></div>
@@ -251,20 +221,9 @@ function Payments() {
 
 function Security() {
   const { user, setUser } = useAuth(); const toast = useToast();
-  const [f, setF] = useState({ current_password: '', new_password: '' }); const [err, setErr] = useState(null);
-  const change = async (e) => {
-    e.preventDefault(); setErr(null);
-    try { const r = await api.post('/api/auth/change-password', f); setToken(r.token); setF({ current_password: '', new_password: '' }); toast('Mot de passe modifié', 'ok'); } catch (e2) { setErr(e2); }
-  };
   const link = async () => { try { const r = await piLogin(true); setUser(r.user); toast('Compte Pi rattaché', 'ok'); } catch (e) { toast(e.message, 'bad'); } };
   return (
     <div className="stack">
-      {user.role !== 'client' && <form className="card stack" onSubmit={change}>
-        <h3>Changer le mot de passe</h3>
-        <Field label="Mot de passe actuel"><input type="password" autoComplete="current-password" value={f.current_password} onChange={(e) => setF({ ...f, current_password: e.target.value })} /></Field>
-        <Field label="Nouveau mot de passe" hint="8 caractères minimum"><input type="password" autoComplete="new-password" value={f.new_password} onChange={(e) => setF({ ...f, new_password: e.target.value })} /></Field>
-        {err && <ErrorBox error={err} />}<button className="btn btn-primary">Modifier</button>
-      </form>}
       <div className="card stack"><h3>Compte Pi Network</h3>
         {user.has_pi ? <div className="notice"><Link2 size={18} />Compte Pi rattaché : <b>{user.pi_username}</b></div> : <><div className="small muted">Rattachez votre compte Pi pour pouvoir payer en Pi (dans Pi Browser). GÉEJ MARKET ne demande jamais votre phrase secrète ni votre clé privée.</div><button className="btn btn-dark" onClick={link} disabled={!piAvailable()}>Rattacher mon compte Pi</button></>}
       </div>

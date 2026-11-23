@@ -39,7 +39,7 @@ const Privacy = () => (
     <h1>Politique de confidentialité</h1>
     <p className="small muted">Dernière mise à jour : 23 novembre 2026</p>
     <h2>1. Responsable du traitement</h2>
-    <p>Safietou Dîedhiou, éditeur de GÉEJ MARKET (Sénégal) — <a href="mailto:safietoudiedhiou05@gmail.com">safietoudiedhiou05@gmail.com</a>.</p>
+    <p>Safietou Dîedhiou, éditeur de GÉEJ MARKET (Sénégal) — safietoudiedhiou05@gmail.com.</p>
     <h2>2. Données collectées</h2>
     <ul>
       <li>Compte Pi : identifiant Pi (uid) et nom d’utilisateur, reçus de Pi Network à la connexion.</li>
@@ -54,7 +54,7 @@ const Privacy = () => (
     <h2>5. Destinataires</h2>
     <ul>
       <li>Le vendeur concerné par votre commande reçoit le nom, le téléphone et l’adresse nécessaires à la livraison.</li>
-      <li>Pi Network traite les données de connexion et de paiement selon sa propre <a href="https://minepi.com/privacy" target="_blank" rel="noreferrer">politique de confidentialité</a>.</li>
+      <li>Pi Network traite les données de connexion et de paiement selon la politique de confidentialité de Pi Network.</li>
       <li>Nos prestataires techniques d’hébergement (serveur et base de données).</li>
     </ul>
     <p>Vos données ne sont ni vendues ni utilisées pour de la publicité.</p>
@@ -85,7 +85,7 @@ const Terms = () => (
     <h2>6. Responsabilité</h2>
     <p>Le contrat de vente est conclu entre le client et le vendeur. Dans la mesure permise par la loi, l’éditeur n’est pas responsable des interruptions dues à Pi Network, à l’hébergement ou au réseau.</p>
     <h2>7. Droit applicable et contact</h2>
-    <p>Droit sénégalais. Contact : <a href="mailto:safietoudiedhiou05@gmail.com">safietoudiedhiou05@gmail.com</a>.</p>
+    <p>Droit sénégalais. Contact : safietoudiedhiou05@gmail.com.</p>
   </>
 );
 function Contact() {
@@ -93,7 +93,7 @@ function Contact() {
   return (
     <>
       <h1>Nous contacter</h1>
-      {cfg.support_phone || cfg.support_whatsapp ? <ul>{cfg.support_phone && <li>Téléphone : <a href={`tel:${cfg.support_phone}`}>{cfg.support_phone}</a></li>}{cfg.support_whatsapp && <li>WhatsApp : <a href={`https://wa.me/${cfg.support_whatsapp.replace(/\D/g, '')}`}>{cfg.support_whatsapp}</a></li>}</ul> : <p>Utilisez le formulaire de réclamation de votre espace « Compte ».</p>}
+      {cfg.support_phone ? <ul>{cfg.support_phone && <li>Téléphone : {cfg.support_phone}</li>}</ul> : <p>Utilisez le formulaire de réclamation de votre espace « Compte ».</p>}
     </>
   );
 }
@@ -106,11 +106,11 @@ function Legal() {
         <li>Application : GÉEJ MARKET — Le marché de la mer</li>
         <li>Nom : Safietou Dîedhiou</li>
         <li>Nom d’utilisateur Pi : famaa773239225</li>
-        <li>E-mail : <a href="mailto:safietoudiedhiou05@gmail.com">safietoudiedhiou05@gmail.com</a></li>
+        <li>E-mail : safietoudiedhiou05@gmail.com</li>
         <li>Pays : Sénégal</li>
       </ul>
       <h2>2. Application Pi Network</h2>
-      <p>GÉEJ MARKET est une application tierce fonctionnant dans Pi Browser, avec le SDK et la plateforme de paiement de Pi Network. Elle est éditée et exploitée de manière indépendante : elle n’est ni éditée, ni approuvée, ni garantie par Pi Network ou la Pi Core Team. L’éditeur s’engage à respecter les <a href="https://minepi.com/terms" target="_blank" rel="noreferrer">Conditions d’utilisation de Pi Network</a> et les conditions applicables aux développeurs.</p>
+      <p>GÉEJ MARKET est une application tierce fonctionnant dans Pi Browser, avec le SDK et la plateforme de paiement de Pi Network. Elle est éditée et exploitée de manière indépendante : elle n’est ni éditée, ni approuvée, ni garantie par Pi Network ou la Pi Core Team. L’éditeur s’engage à respecter les conditions d’utilisation de Pi Network et les conditions applicables aux développeurs.</p>
       <h2>3. Monnaie</h2>
       <p>Tous les prix sont en Pi (π), sans autre monnaie ni conversion. Les paiements sont effectués sur Pi Network (Mainnet) et sont irréversibles.</p>
       <h2>4. Connexion et sécurité du compte Pi</h2>

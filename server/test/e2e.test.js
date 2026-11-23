@@ -105,15 +105,35 @@ test('recherche insensible aux accents, filtres et injection SQL', async () => {
   assert.equal((await pool.query('SELECT count(*)::int n FROM users')).rows[0].n >= 3, true);
 });
 
-test('mode Pi seul: inscription et connexion client par mot de passe refusées, équipe autorisée', async () => {
+test('connexion Pi seule: aucune connexion par mot de passe (équipe comprise); rôles équipe attribués par nom d\'utilisateur Pi', async () => {
   process.env.ALLOW_PASSWORD_CLIENTS = '0';
+  process.env.ADMIN_PI_USERNAMES = '@Chef_Pi';
+  process.env.SELLER_PI_USERNAMES = 'vendeur_pi, autre_vendeur';
   try {
     const reg = await call('POST', '/api/auth/register', { body: { full_name: 'Awa Ndiaye', phone: '+221 76 111 22 33', password: 'Motdepasse1', accept_terms: true } });
     assert.equal(reg.status, 403); assert.equal(reg.body.error?.code ?? reg.body.code, 'pi_only');
-    assert.equal((await pool.query("SELECT count(*)::int n FROM users WHERE phone='761112233'")).rows[0].n, 0);
-    assert.ok(await login('admin@geejmarket.sn', ADMIN_PW));
-    assert.ok(await login('vendeur@geejmarket.sn', 'Vendeur#2026'));
-  } finally { process.env.ALLOW_PASSWORD_CLIENTS = '1'; }
+    for (const [id, pw] of [['admin@geejmarket.sn', ADMIN_PW], ['vendeur@geejmarket.sn', 'Vendeur#2026']]) {
+      assert.equal((await call('POST', '/api/auth/login', { body: { identifier: id, password: pw } })).status, 403);
+    }
+    // équipe: rôle d'après le nom d'utilisateur Pi vérifié par Pi (/v2/me)
+    piState.me.set('jeton-admin-pi-xxxxx', { uid: 'pi-uid-admin', username: 'chef_pi' });
+    piState.me.set('jeton-vendeur-pi-xxxxx', { uid: 'pi-uid-vend', username: 'Vendeur_Pi' });
+    piState.me.set('jeton-client-pi-xxxxx', { uid: 'pi-uid-cli', username: 'simple_client' });
+    const ad = await call('POST', '/api/auth/pi', { body: { accessToken: 'jeton-admin-pi-xxxxx' } });
+    assert.equal(ad.body.user.role, 'admin');
+    assert.equal((await call('GET', '/api/admin/stats', { token: ad.body.token })).status, 200);
+    const vd = await call('POST', '/api/auth/pi', { body: { accessToken: 'jeton-vendeur-pi-xxxxx' } });
+    assert.equal(vd.body.user.role, 'seller');
+    assert.equal((await call('GET', '/api/seller/dashboard', { token: vd.body.token })).status, 200);
+    assert.equal((await call('GET', '/api/admin/stats', { token: vd.body.token })).status, 403);
+    const cl = await call('POST', '/api/auth/pi', { body: { accessToken: 'jeton-client-pi-xxxxx' } });
+    assert.equal(cl.body.user.role, 'client');
+    assert.equal((await call('GET', '/api/admin/stats', { token: cl.body.token })).status, 403);
+    // retrait de la liste => retour au rôle client à la connexion suivante
+    process.env.ADMIN_PI_USERNAMES = '';
+    const ad2 = await call('POST', '/api/auth/pi', { body: { accessToken: 'jeton-admin-pi-xxxxx' } });
+    assert.equal(ad2.body.user.role, 'client');
+  } finally { process.env.ALLOW_PASSWORD_CLIENTS = '1'; process.env.ADMIN_PI_USERNAMES = ''; process.env.SELLER_PI_USERNAMES = ''; }
 });
 
 test('inscription, validation et connexion', async () => {

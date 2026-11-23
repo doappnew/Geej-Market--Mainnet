@@ -34,7 +34,7 @@ export default function Checkout() {
   const nav = useNavigate();
 
   const [step, setStep] = useState(1);
-  const [customer, setCustomer] = useState({ full_name: '', phone: '', email: '', pi_username: '' });
+  const [customer, setCustomer] = useState({ full_name: '', phone: '', pi_username: '' });
   const [addr, setAddr] = useState({ region_id: '', department: '', commune: '', quartier: '', address_line: '', landmark: '', lat: null, lng: null });
   const [mode, setMode] = useState('domicile');
   const [comment, setComment] = useState('');
@@ -51,7 +51,7 @@ export default function Checkout() {
 
   useEffect(() => {
     if (!user) return;
-    setCustomer((c) => ({ ...c, full_name: c.full_name || user.full_name || '', phone: c.phone || phoneFmt(user.phone) || '', email: c.email || user.email || '', pi_username: c.pi_username || user.pi_username || '' }));
+    setCustomer((c) => ({ ...c, full_name: c.full_name || user.full_name || '', phone: c.phone || phoneFmt(user.phone) || '', pi_username: c.pi_username || user.pi_username || '' }));
     api.get('/api/geo/regions').then((r) => setRegions(r.regions));
     api.get('/api/me/addresses').then((r) => {
       setSaved(r.addresses);
@@ -94,7 +94,6 @@ export default function Checkout() {
     const e = {};
     if (customer.full_name.trim().length < 2) e.full_name = 'Nom et prénom requis.';
     if (!normPhone(customer.phone)) e.phone = 'Numéro invalide (ex : 77 123 45 67).';
-    if (customer.email && !/^\S+@\S+\.\S+$/.test(customer.email)) e.email = 'E-mail invalide.';
     if (!addr.region_id) e.region_id = 'Choisissez une région.';
     if (!addr.department) e.department = 'Choisissez un département.';
     if (addr.commune.trim().length < 2) e.commune = 'Commune ou ville requise.';
@@ -151,7 +150,6 @@ export default function Checkout() {
             <div className="fgrid two">
               <Field label="Nom complet" required error={errors.full_name}><input autoComplete="name" value={customer.full_name} onChange={setC('full_name')} /></Field>
               <Field label="Téléphone" required error={errors.phone}><input inputMode="tel" autoComplete="tel" placeholder="77 123 45 67" value={customer.phone} onChange={setC('phone')} /></Field>
-              <Field label="E-mail (facultatif)" error={errors.email}><input type="email" autoComplete="email" value={customer.email} onChange={setC('email')} /></Field>
               <Field label="Identifiant Pi (facultatif)"><input value={customer.pi_username} onChange={setC('pi_username')} /></Field>
             </div>
           </div>

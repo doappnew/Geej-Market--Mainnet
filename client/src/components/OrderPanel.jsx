@@ -1,8 +1,8 @@
 // Détail d'une commande côté vendeur/admin (affichage + actions)
 import { useState } from 'react';
-import { Phone, MessageCircle, MapPin, ExternalLink } from 'lucide-react';
+import { Phone, MapPin } from 'lucide-react';
 import { api } from '../api.js';
-import { piFmt, num, dateFr, MODES, PAY_METHOD, phoneFmt, waLink, STATUS } from '../util.js';
+import { piFmt, num, dateFr, MODES, PAY_METHOD, phoneFmt, STATUS } from '../util.js';
 import { StatusBadge, PayBadge, Modal, Field, ErrorBox } from './ui.jsx';
 import { useToast } from '../state.jsx';
 
@@ -24,7 +24,6 @@ export default function OrderPanel({ o, role, reload }) {
 
   const next = NEXT[o.status] || [];
   const closed = ['livree', 'annulee'].includes(o.status);
-  const mapsUrl = o.lat && o.lng ? `https://www.google.com/maps?q=${o.lat},${o.lng}` : `https://www.google.com/maps/search/${encodeURIComponent(`${o.address_line}, ${o.quartier}, ${o.commune}, Sénégal`)}`;
 
   return (
     <div className="cols">
@@ -59,13 +58,12 @@ export default function OrderPanel({ o, role, reload }) {
       <aside className="aside">
         <div className="card"><h3>Client</h3>
           <b>{o.customer_name}</b>{o.pi_username && <div className="small">π {o.pi_username}</div>}
-          <div className="small muted">{phoneFmt(o.customer_phone)}{o.customer_email ? ` · ${o.customer_email}` : ''}</div>
-          <div className="row wrap mt-s"><a className="btn btn-sm btn-primary" href={`tel:+221${o.customer_phone}`}><Phone size={15} /> Appeler</a><a className="btn btn-sm btn-ghost" href={waLink(o.customer_phone, `Bonjour ${o.customer_name}, concernant votre commande ${o.order_no} sur GÉEJ MARKET…`)} target="_blank" rel="noreferrer"><MessageCircle size={15} /> WhatsApp</a></div>
+          <div className="small muted">{phoneFmt(o.customer_phone)}</div>
+          <div className="row wrap mt-s"><span className="btn btn-sm btn-ghost" style={{ cursor: 'default' }}><Phone size={15} /> {phoneFmt(o.customer_phone)}</span></div>
         </div>
         <div className="card small"><h3>Livraison</h3>
           <b>{MODES[o.delivery_mode]}</b>
           <div className="row mt-s" style={{ alignItems: 'flex-start' }}><MapPin size={18} color="var(--turq-d)" /><div>{o.address_line}{o.landmark ? <><br />Repère : {o.landmark}</> : null}<br />{o.quartier}, {o.commune}<br />{o.department}, {o.region_name}</div></div>
-          <a className="btn btn-sm btn-ghost mt-s" href={mapsUrl} target="_blank" rel="noreferrer"><ExternalLink size={15} /> Voir sur la carte</a>
           {o.eta_text && <div className="mt-s">Délai annoncé : {o.eta_text}</div>}
           {o.driver_name && <div>Livreur : {o.driver_name}{o.driver_phone ? ` · ${phoneFmt(o.driver_phone)}` : ''}</div>}
           {o.comment && <div className="notice mt-s"><div><b>Commentaire du client :</b> {o.comment}</div></div>}

@@ -205,16 +205,16 @@ function Shop() {
   const toast = useToast();
   const { data } = useAsync(() => api.get('/api/seller/profile'), []);
   const [f, setF] = useState(null); const [err, setErr] = useState(null);
-  useEffect(() => { if (data) setF({ ...data.seller, phone: phoneFmt(data.seller.phone), whatsapp: data.seller.whatsapp ? phoneFmt(data.seller.whatsapp.replace(/^221/, '')) : '', description: data.seller.description || '', city: data.seller.city || '' }); }, [data]);
+  useEffect(() => { if (data) setF({ ...data.seller, phone: phoneFmt(data.seller.phone), description: data.seller.description || '', city: data.seller.city || '' }); }, [data]);
   if (!f) return <Spinner />;
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
-  const save = async (e) => { e.preventDefault(); setErr(null); try { await api.put('/api/seller/profile', { shop_name: f.shop_name, description: f.description, city: f.city, phone: f.phone, whatsapp: f.whatsapp || null }); toast('Boutique mise à jour', 'ok'); } catch (e2) { setErr(e2); } };
+  const save = async (e) => { e.preventDefault(); setErr(null); try { await api.put('/api/seller/profile', { shop_name: f.shop_name, description: f.description, city: f.city, phone: f.phone }); toast('Boutique mise à jour', 'ok'); } catch (e2) { setErr(e2); } };
   return (
     <form className="card stack" style={{ maxWidth: 620 }} onSubmit={save}>
       <h1>Ma boutique</h1>
       <Field label="Nom de la boutique" required><input value={f.shop_name} onChange={set('shop_name')} required /></Field>
       <Field label="Description"><textarea value={f.description} onChange={set('description')} maxLength={500} /></Field>
-      <div className="fgrid two"><Field label="Ville"><input value={f.city} onChange={set('city')} /></Field><Field label="Téléphone" required><input inputMode="tel" value={f.phone} onChange={set('phone')} required /></Field><Field label="WhatsApp" hint="Numéro sénégalais"><input inputMode="tel" value={f.whatsapp} onChange={set('whatsapp')} /></Field></div>
+      <div className="fgrid two"><Field label="Ville"><input value={f.city} onChange={set('city')} /></Field><Field label="Téléphone" required><input inputMode="tel" value={f.phone} onChange={set('phone')} required /></Field></div>
       {err && <ErrorBox error={err} />}<button className="btn btn-primary">Enregistrer</button>
     </form>
   );
