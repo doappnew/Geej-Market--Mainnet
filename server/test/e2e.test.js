@@ -122,6 +122,12 @@ test('connexion Pi seule: aucune connexion par mot de passe (équipe comprise); 
     const ad = await call('POST', '/api/auth/pi', { body: { accessToken: 'jeton-admin-pi-xxxxx' } });
     assert.equal(ad.body.user.role, 'admin');
     assert.equal((await call('GET', '/api/admin/stats', { token: ad.body.token })).status, 200);
+    // l'administrateur gère lui-même la boutique: création d'un produit sans compte vendeur
+    assert.ok(ad.body.user.seller_id);
+    const cat = (await call('GET', '/api/categories')).body.categories[0];
+    const np = await call('POST', '/api/seller/products', { token: ad.body.token, body: { category_id: cat.id, name: 'Produit admin test', description: 'x', price: 0.25, unit: 'kg', qty_step: 0.5, min_qty: 0.5, stock: 10, condition: 'frais', is_active: true } });
+    assert.equal(np.status, 201);
+    assert.equal((await call('GET', '/api/admin/products', { token: ad.body.token })).body.products.some((x) => x.name === 'Produit admin test'), true);
     const vd = await call('POST', '/api/auth/pi', { body: { accessToken: 'jeton-vendeur-pi-xxxxx' } });
     assert.equal(vd.body.user.role, 'seller');
     assert.equal((await call('GET', '/api/seller/dashboard', { token: vd.body.token })).status, 200);

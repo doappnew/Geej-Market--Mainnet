@@ -20,6 +20,7 @@ async function syncStaffRole(id, username) {
   const { rows } = await query('SELECT role FROM users WHERE id = $1', [id]);
   const cur = rows[0].role;
   const want = u && piList('ADMIN_PI_USERNAMES').includes(u) ? 'admin' : u && piList('SELLER_PI_USERNAMES').includes(u) ? 'seller' : 'client';
+  if (want === 'admin') await query(`INSERT INTO sellers(user_id, shop_name, city) VALUES ($1, 'GÉEJ MARKET', 'Dakar') ON CONFLICT (user_id) DO NOTHING`, [id]);
   if (want === cur) return;
   await query('UPDATE users SET role = $1, token_version = token_version + 1 WHERE id = $2', [want, id]);
   if (want === 'admin') await query(`INSERT INTO admins(user_id, level) VALUES ($1, 'super_admin') ON CONFLICT (user_id) DO NOTHING`, [id]);

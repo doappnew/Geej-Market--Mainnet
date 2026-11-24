@@ -112,7 +112,7 @@ function StockEdit({ p, onSave }) {
   return <div className="row" style={{ gap: 6 }}><input style={{ width: 80, minHeight: 36 }} className="input" type="number" min="0" step="any" value={v} onChange={(e) => setV(e.target.value)} onBlur={() => Number(v) !== Number(p.stock) && v !== '' && onSave(Number(v))} onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()} aria-label={`Stock de ${p.name}`} /><span className="small muted">{p.unit}</span>{out && <span className="badge red">Rupture</span>}</div>;
 }
 
-function ProductForm() {
+export function ProductForm({ base = '/vendeur' }) {
   const { id } = useParams();
   const nav = useNavigate(); const toast = useToast();
   const cats = useAsync(() => api.get('/api/categories'), []);
@@ -143,7 +143,7 @@ function ProductForm() {
       let pid = id;
       if (id) await api.put(`/api/seller/products/${id}`, body); else pid = (await api.post('/api/seller/products', body)).id;
       if (files.length) { const fd = new FormData(); files.forEach((x) => fd.append('images', x)); await api.upload(`/api/seller/products/${pid}/images`, fd); }
-      toast('Produit enregistré', 'ok'); nav('/vendeur/produits');
+      toast('Produit enregistré', 'ok'); nav(`${base}/produits`);
     } catch (e2) { setErr(e2); window.scrollTo({ top: 0 }); } finally { setBusy(false); }
   };
   const delImg = async (im) => { await api.del(`/api/seller/products/${id}/images/${im.id}`); setImages(images.filter((x) => x.id !== im.id)); };
@@ -196,7 +196,7 @@ function ProductForm() {
         <label className="row"><Switch checked={!!f.is_active} onChange={(v) => setF({ ...f, is_active: v })} label="Produit actif" /> Produit actif (visible et commandable)</label>
         <label className="row"><Switch checked={!!f.is_featured} onChange={(v) => setF({ ...f, is_featured: v })} label="Sélection du vendeur" /> Sélection du vendeur (page d’accueil)</label>
       </div>
-      <div className="row"><Link to="/vendeur/produits" className="btn btn-ghost">Annuler</Link><button className="btn btn-primary grow" disabled={busy}>{busy ? 'Enregistrement…' : 'Enregistrer le produit'}</button></div>
+      <div className="row"><Link to={`${base}/produits`} className="btn btn-ghost">Annuler</Link><button className="btn btn-primary grow" disabled={busy}>{busy ? 'Enregistrement…' : 'Enregistrer le produit'}</button></div>
     </form>
   );
 }

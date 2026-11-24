@@ -14,7 +14,9 @@ import { PRODUCT_SELECT } from '../lib/products.js';
 
 const r = Router();
 numericParams(r, 'id', 'pid', 'imageId');
-r.use(requireRole('seller'));
+r.use(requireRole('seller', 'admin'));
+// L'administrateur gère sa propre boutique « GÉEJ MARKET » avec les mêmes écrans
+r.use((req, _res, next) => (req.user.seller_id ? next() : next(new HttpError(403, 'Boutique introuvable : reconnectez-vous avec Pi.', 'no_shop'))));
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 8 * 1024 * 1024, files: 6 } });
 
 const STATUS_LABEL = {

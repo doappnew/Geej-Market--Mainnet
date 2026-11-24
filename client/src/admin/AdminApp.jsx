@@ -7,6 +7,7 @@ import { Field, Spinner, ErrorBox, StatusBadge, PayBadge, Switch, useAsync, Empt
 import OrderPanel from '../components/OrderPanel.jsx';
 import ZonesManager from '../components/ZonesManager.jsx';
 import { useToast } from '../state.jsx';
+import { ProductForm } from '../seller/SellerApp.jsx';
 
 const NAV = [['/admin', 'Statistiques', true], ['/admin/commandes', 'Commandes'], ['/admin/produits', 'Produits & stocks'], ['/admin/categories', 'Catégories'], ['/admin/vendeurs', 'Vendeurs'], ['/admin/utilisateurs', 'Utilisateurs'], ['/admin/zones', 'Livraison'], ['/admin/reclamations', 'Réclamations'], ['/admin/parametres', 'Paramètres'], ['/admin/journal', 'Journal']];
 
@@ -18,6 +19,8 @@ export default function AdminApp() {
         <Route path="commandes" element={<Orders />} />
         <Route path="commandes/:id" element={<OrderPage />} />
         <Route path="produits" element={<Products />} />
+        <Route path="produits/nouveau" element={<ProductForm base="/admin" />} />
+        <Route path="produits/:id" element={<ProductForm base="/admin" />} />
         <Route path="categories" element={<Categories />} />
         <Route path="vendeurs" element={<Sellers />} />
         <Route path="utilisateurs" element={<Users />} />
@@ -82,14 +85,15 @@ function Products() {
   const del = async (p) => { if (confirm(`Supprimer « ${p.name} » ?`)) { await api.del(`/api/admin/products/${p.id}`); setTick(tick + 1); } };
   return (
     <>
-      <h1>Produits et stocks</h1>
+      <div className="row between mb"><h1 style={{ margin: 0 }}>Produits et stocks</h1><Link to="/admin/produits/nouveau" className="btn btn-primary">Ajouter un produit</Link></div>
       <input className="input mb" style={{ maxWidth: 300 }} placeholder="Rechercher un produit…" value={q} onChange={(e) => { setQ(e.target.value); setPage(1); }} />
       {loading && <Spinner />}{error && <ErrorBox error={error} />}
       {data && <div className="tablewrap"><table className="t"><thead><tr><th>Produit</th><th>Vendeur</th><th>Catégorie</th><th>Prix</th><th>Stock</th><th>Sélection</th><th>Actif</th><th /></tr></thead>
         <tbody>{data.products.map((p) => <tr key={p.id}><td><div className="row">{p.images[0] ? <img className="thumb" src={p.images[0]} alt="" /> : <div className="thumb" />}<b>{p.name}</b></div></td><td>{p.shop_name}</td><td>{p.category_name}</td><td>{piFmt(p.price)}</td>
           <td><AdminStock p={p} onSave={(v) => patch(p, { stock: v })} /></td>
           <td><Switch checked={p.is_featured} onChange={(v) => patch(p, { is_featured: v })} label="Sélection" /></td><td><Switch checked={p.is_active} onChange={(v) => patch(p, { is_active: v })} label="Actif" /></td>
-          <td><button className="btn btn-sm btn-danger" onClick={() => del(p)}>Suppr.</button></td></tr>)}</tbody></table></div>}
+          <td><div className="row"><Link className="btn btn-sm btn-ghost" to={`/admin/produits/${p.id}`}>Modifier</Link><button className="btn btn-sm btn-danger" onClick={() => del(p)}>Suppr.</button></div></td></tr>)}</tbody></table></div>}
+      {data && !data.products.length && <Empty title="Aucun produit">Cliquez sur « Ajouter un produit » : nom, catégorie, prix en π, stock et photos.</Empty>}
       <Pager page={page} setPage={setPage} more={data?.products.length === 30} />
     </>
   );
