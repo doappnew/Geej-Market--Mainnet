@@ -93,7 +93,11 @@ function Contact() {
   return (
     <>
       <h1>Nous contacter</h1>
-      {cfg.support_phone ? <ul>{cfg.support_phone && <li>Téléphone : {cfg.support_phone}</li>}</ul> : <p>Utilisez le formulaire de réclamation de votre espace « Compte ».</p>}
+      <ul>
+        <li>E-mail : safietoudiedhiou05@gmail.com</li>
+        {cfg.support_phone && <li>Téléphone : {cfg.support_phone}</li>}
+      </ul>
+      <p>Pour une commande ou un paiement, utilisez le formulaire « Réclamations et assistance » de votre espace « Compte » : votre demande est liée à votre commande et vous êtes prévenu de la réponse dans l’application.</p>
     </>
   );
 }
